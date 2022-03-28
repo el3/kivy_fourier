@@ -98,11 +98,11 @@ RootLayout:
     TextInput:
         text: root.t1
         on_text:
-            if self.text != "": root.t1 = self.text; root.seg.set_length(float(root.t1)); root.root.curve.points = []
+            if self.text not in ["", "-"]: root.t1 = self.text; root.seg.set_length(float(root.t1)); root.root.curve.points = []
     TextInput:
         text: root.t2
         on_text:
-            if self.text != "": root.t2 = self.text; root.seg.freq = float(root.t2); root.root.curve.points = []
+            if self.text not in ["", "-"]: root.t2 = self.text; root.seg.freq = float(root.t2); root.root.curve.points = []
 
 <RV@RecycleView>:
     viewclass: 'Row'
