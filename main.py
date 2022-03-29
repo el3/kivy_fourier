@@ -23,11 +23,27 @@ class RootLayout(FloatLayout):
 
     def add_segment(self, t1, t2, rv):
         self.curve.points = []
+        t1 = t1 or "10"
+        t2 = t2 or "1"
         seg = Segment(float(t1), float(t2), self.seg_index)
         rv.data.append({"seg":seg, "root":self, "t1": t1, "t2": t2})
         self.add_widget(seg)
         self.segments.append(seg)
         self.seg_index += 1
+
+    def set_length(self, row, text):
+        if text == "":
+            return
+        row.t1 = text
+        row.seg.set_length(float(row.t1))
+        self.curve.points = []
+
+    def set_freq(self, row, text):
+        if text == "":
+            return
+        row.t2 = text
+        row.seg.freq = float(row.t2)
+        self.curve.points = []
 
     def start_anim(self):
         Clock.schedule_interval(self.anim, 1/60)
@@ -66,48 +82,57 @@ class Segment(Widget):
         self.end = Vector(self.start) + self.vector
 
 
+
 KV = """
 #:import random random.random
+#:import Window kivy.core.window.Window
+
+<ValueInput@TextInput>:
+    input_filter: "float"
 
 RootLayout:
     BoxLayout:
         size_hint: None, None
-        size: 100, 500
+        size: 100, Window.height
         orientation: "vertical"
         RV:
             id: rv
-            size_hint_y: 8
-        TextInput:
-            id: t1
-            text: "{:.0f}".format(random()*40)
-        TextInput:
-            id: t2
-            text: "{:.0f}".format(random()*10-5)
-        Button:
-            on_release:
-                root.add_segment(t1.text, t2.text, rv)
-                t2.text = "{:.0f}".format(random()*10-5)
-                t1.text = "{:.0f}".format(random()*40)
-        Button:
-            on_release:
-                root.start_anim()
+        BoxLayout:
+            size_hint_y: 0.3
+            orientation: "vertical"
+            ValueInput:
+                id: t1
+                text: "{:.0f}".format(random()*40)
+            ValueInput:
+                id: t2
+                text: "{:.0f}".format(random()*10-5)
+            Button:
+                text: "Add vector"
+                on_release:
+                    root.add_segment(t1.text, t2.text, rv)
+                    t2.text = "{:.0f}".format(random()*10-5)
+                    t1.text = "{:.0f}".format(random()*40)
+            Button:
+                text: "Start"
+                on_release:
+                    root.start_anim()
 
 <Row@BoxLayout>:
     t1: ""
     t2: ""
-    TextInput:
+    ValueInput:
         text: root.t1
         on_text:
-            if self.text not in ["", "-"]: root.t1 = self.text; root.seg.set_length(float(root.t1)); root.root.curve.points = []
-    TextInput:
+            if self.text not in ["-", "."]: root.root.set_length(root, self.text)
+    ValueInput:
         text: root.t2
         on_text:
-            if self.text not in ["", "-"]: root.t2 = self.text; root.seg.freq = float(root.t2); root.root.curve.points = []
+            if self.text not in ["-", "."]: root.root.set_freq(root, self.text)
 
 <RV@RecycleView>:
     viewclass: 'Row'
     RecycleBoxLayout:
-        default_size: None, dp(32)
+        default_size: None, dp(26)
         default_size_hint: 1, None
         size_hint_y: None
         height: self.minimum_height
